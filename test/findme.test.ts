@@ -1,8 +1,8 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+import { expect } from "chai";
+import { ethers } from "hardhat";
 
 describe("FindMe", function () {
-  async function deployFindMe(deployValue = 0n) {
+  async function deployFindMe(deployValue: bigint = 0n) {
     const [owner, other] = await ethers.getSigners();
     const FindMe = await ethers.getContractFactory("FindMe", owner);
     const findMe = await FindMe.deploy({ value: deployValue });
@@ -20,7 +20,7 @@ describe("FindMe", function () {
     const { findMe } = await deployFindMe(oneEther);
 
     expect(await ethers.provider.getBalance(await findMe.getAddress())).to.equal(
-      oneEther
+      oneEther,
     );
   });
 
@@ -34,8 +34,8 @@ describe("FindMe", function () {
   it("reverts when non-owner calls withdraw", async function () {
     const { findMe, other } = await deployFindMe(ethers.parseEther("1"));
 
-    await expect(findMe.connect(other).withdraw()).to.be.revertedWith(
-      "Only the owner can withdraw"
+    await expect((findMe.connect(other) as typeof findMe).withdraw()).to.be.revertedWith(
+      "Only the owner can withdraw",
     );
   });
 
