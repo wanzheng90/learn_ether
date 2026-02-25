@@ -19,7 +19,28 @@ async function triggerAndDecodeRevert() {
   //   "Reason: REVERT_REASON_SAMPLE"
   //
   // Keep this block as your exercise area.
-  throw new Error("TODO: implement revert triggering and decoding");
+  const factory = await ethers.getContractFactory("RevertLab");
+  const lab = await factory.deploy();
+  await lab.waitForDeployment();
+
+  const messages: string[] = [];
+
+  try {
+    await lab.mustBeEven(3n);
+  } catch (error: unknown) {
+    const e = error as { data?: string };
+    const parsed = e.data ? lab.interface.parseError(e.data) : null;
+    messages.push(parsed?.name);
+  }
+
+  try {
+    await lab.alwaysFails();
+  } catch (error: unknown) {
+    const e = error as { shortMessage?: string; message?: string };
+    messages.push(e.message??"");
+  }
+
+  return messages;
 }
 
 describe("02 Revert decoding", function () {

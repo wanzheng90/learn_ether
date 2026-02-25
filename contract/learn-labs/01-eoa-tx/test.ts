@@ -28,13 +28,15 @@ async function sendThreeWithManualNonceAndRetry() {
   const [sender, receiver] = await ethers.getSigners();
   const startNonce = await ethers.provider.getTransactionCount(sender.address, "latest");
   const fee = await ethers.provider.getFeeData();
+  const balanceWei = await ethers.provider.getBalance(sender.address);
+  console.log(balanceWei)
   const receipts = [];
   for (var i = 0; i < 3; i++) {
     const value = ethers.parseEther("0.01");
     const txResp = await sender.sendTransaction({ 
       "to": receiver.address, 
       value,
-      "nonce": startNonce,
+      "nonce": startNonce+i,
       "gasLimit":21000n,
       "maxFeePerGas":fee.maxFeePerGas
     });
