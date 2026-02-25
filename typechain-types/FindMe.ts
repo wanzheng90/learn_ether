@@ -8,6 +8,7 @@ import type {
   FunctionFragment,
   Result,
   Interface,
+  EventFragment,
   AddressLike,
   ContractRunner,
   ContractMethod,
@@ -17,6 +18,7 @@ import type {
   TypedContractEvent,
   TypedDeferredTopicFilter,
   TypedEventLog,
+  TypedLogDescription,
   TypedListener,
   TypedContractMethod,
 } from "./common";
@@ -31,6 +33,8 @@ export type UserStructOutput = [userAddress: string, amount: bigint] & {
 export interface FindMeInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "BPS_DENOMINATOR"
+      | "MAX_REFUND_BPS"
       | "MIN_FUND_WEI"
       | "donatedAmountByUser"
       | "donatedUsers"
@@ -40,6 +44,16 @@ export interface FindMeInterface extends Interface {
       | "withdraw"
   ): FunctionFragment;
 
+  getEvent(nameOrSignatureOrTopic: "DonationProcessed"): EventFragment;
+
+  encodeFunctionData(
+    functionFragment: "BPS_DENOMINATOR",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "MAX_REFUND_BPS",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "MIN_FUND_WEI",
     values?: undefined
@@ -58,6 +72,14 @@ export interface FindMeInterface extends Interface {
   encodeFunctionData(functionFragment: "withdraw", values?: undefined): string;
 
   decodeFunctionResult(
+    functionFragment: "BPS_DENOMINATOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "MAX_REFUND_BPS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "MIN_FUND_WEI",
     data: BytesLike
   ): Result;
@@ -73,6 +95,34 @@ export interface FindMeInterface extends Interface {
   decodeFunctionResult(functionFragment: "fund", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
+}
+
+export namespace DonationProcessedEvent {
+  export type InputTuple = [
+    donor: AddressLike,
+    grossAmount: BigNumberish,
+    refundAmount: BigNumberish,
+    netAmount: BigNumberish,
+    refundBps: BigNumberish
+  ];
+  export type OutputTuple = [
+    donor: string,
+    grossAmount: bigint,
+    refundAmount: bigint,
+    netAmount: bigint,
+    refundBps: bigint
+  ];
+  export interface OutputObject {
+    donor: string;
+    grossAmount: bigint;
+    refundAmount: bigint;
+    netAmount: bigint;
+    refundBps: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export interface FindMe extends BaseContract {
@@ -118,6 +168,10 @@ export interface FindMe extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  BPS_DENOMINATOR: TypedContractMethod<[], [bigint], "view">;
+
+  MAX_REFUND_BPS: TypedContractMethod<[], [bigint], "view">;
+
   MIN_FUND_WEI: TypedContractMethod<[], [bigint], "view">;
 
   donatedAmountByUser: TypedContractMethod<
@@ -141,6 +195,12 @@ export interface FindMe extends BaseContract {
   ): T;
 
   getFunction(
+    nameOrSignature: "BPS_DENOMINATOR"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "MAX_REFUND_BPS"
+  ): TypedContractMethod<[], [bigint], "view">;
+  getFunction(
     nameOrSignature: "MIN_FUND_WEI"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
@@ -162,5 +222,24 @@ export interface FindMe extends BaseContract {
     nameOrSignature: "withdraw"
   ): TypedContractMethod<[], [void], "nonpayable">;
 
-  filters: {};
+  getEvent(
+    key: "DonationProcessed"
+  ): TypedContractEvent<
+    DonationProcessedEvent.InputTuple,
+    DonationProcessedEvent.OutputTuple,
+    DonationProcessedEvent.OutputObject
+  >;
+
+  filters: {
+    "DonationProcessed(address,uint256,uint256,uint256,uint256)": TypedContractEvent<
+      DonationProcessedEvent.InputTuple,
+      DonationProcessedEvent.OutputTuple,
+      DonationProcessedEvent.OutputObject
+    >;
+    DonationProcessed: TypedContractEvent<
+      DonationProcessedEvent.InputTuple,
+      DonationProcessedEvent.OutputTuple,
+      DonationProcessedEvent.OutputObject
+    >;
+  };
 }

@@ -1,46 +1,150 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.34;
 
-// FindMe: 一个最小可运行的捐款合约
-// 你可以把它理解为：
-// 1) 用户调用 fund() 往合约里打 ETH
-// 2) 合约记录每个用户捐了多少
+interface IVRFCoordinatorLike {
+    function requestRandomWords(
+        bytes32 keyHash,
+        uint64 subId,
+        uint16 requestConfirmations,
+        uint32 callbackGasLimit,
+        uint32 numWords
+    ) external returns (uint256 requestId);
+}
+
+// 前端使用的数据结构
+struct User {
+    address userAddress;
+    uint256 amount;
+}
+
+// FindMe + VRF:
+// 1) 用户调用 fund() 捐款，合约向 VRF 请求随机数
+// 2) 协调器回调 fulfillRandomWords() 后结算返现
 // 3) 只有 owner 可以 withdraw() 提现全部余额
 contract FindMe {
-    // 最小捐款金额（单位: wei）
-    // 1e15 wei = 0.001 ETH
-    uint256 public constant MIN_FUND_WEI = 1e15;
+    uint256 public constant MIN_FUND_WEI = 1e15; // 0.001 ETH
+    uint256 public constant BPS_DENOMINATOR = 10_000;
+    uint256 public constant MAX_REFUND_BPS = 3_000; // 最高返还 30%
+    uint32 public constant VRF_NUM_WORDS = 1;
 
-    // owner 在部署时写死为部署者地址，后续不可更改（immutable）
     address payable public immutable owner;
+    IVRFCoordinatorLike public immutable coordinator;
+    bytes32 public immutable keyHash;
+    uint64 public immutable subscriptionId;
+    uint16 public immutable requestConfirmations;
+    uint32 public immutable callbackGasLimit;
 
-    // 每个地址累计捐款金额
     mapping(address => uint256) public donatedAmountByUser;
-
-    // 捐款过的用户地址列表（用于前端展示）
     address[] public donatedUsers;
+    uint256 private unlocked = 1;
+    uint256 public pendingDonationCount;
 
-    // 构造函数：部署合约时执行一次
-    constructor() payable {
-        owner = payable(msg.sender);
+    struct PendingDonation {
+        address donor;
+        uint256 grossAmount;
+        bool exists;
     }
 
-    // 捐款函数（用户调用）
-    function fund() external payable {
-        // msg.value 是本次交易附带的 ETH（wei）
+    mapping(uint256 => PendingDonation) public pendingDonations;
+
+    event DonationRequested(
+        address indexed donor,
+        uint256 indexed requestId,
+        uint256 grossAmount
+    );
+    event DonationProcessed(
+        address indexed donor,
+        uint256 indexed requestId,
+        uint256 grossAmount,
+        uint256 refundAmount,
+        uint256 netAmount,
+        uint256 refundBps
+    );
+
+    modifier nonReentrant() {
+        require(unlocked == 1, "Reentrancy blocked");
+        unlocked = 2;
+        _;
+        unlocked = 1;
+    }
+
+    constructor(
+        address coordinatorAddress,
+        uint64 subId,
+        bytes32 vrfKeyHash,
+        uint16 vrfRequestConfirmations,
+        uint32 vrfCallbackGasLimit
+    ) payable {
+        owner = payable(msg.sender);
+        coordinator = IVRFCoordinatorLike(coordinatorAddress);
+        subscriptionId = subId;
+        keyHash = vrfKeyHash;
+        requestConfirmations = vrfRequestConfirmations;
+        callbackGasLimit = vrfCallbackGasLimit;
+    }
+
+    // 捐款函数：先记 pending，再在 VRF 回调时结算
+    function fund() external payable nonReentrant {
         require(msg.value >= MIN_FUND_WEI, "Minimum donation is 0.001 ETH");
 
-        // 只有第一次捐款的用户才加入数组，避免重复地址
-        if (donatedAmountByUser[msg.sender] == 0) {
-            donatedUsers.push(msg.sender);
-        }
+        uint256 requestId = coordinator.requestRandomWords(
+            keyHash,
+            subscriptionId,
+            requestConfirmations,
+            callbackGasLimit,
+            VRF_NUM_WORDS
+        );
+        pendingDonations[requestId] = PendingDonation({
+            donor: msg.sender,
+            grossAmount: msg.value,
+            exists: true
+        });
+        pendingDonationCount += 1;
 
-        // 累加用户总捐款
-        donatedAmountByUser[msg.sender] += msg.value;
+        emit DonationRequested(msg.sender, requestId, msg.value);
     }
 
-    // 返回所有捐款人的地址和金额
-    // 为什么不用直接返回 mapping？因为 mapping 不能被遍历
+    // 协调器回调，完成返现结算
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] memory randomWords
+    ) external nonReentrant {
+        require(
+            msg.sender == address(coordinator),
+            "Only coordinator can fulfill"
+        );
+        require(randomWords.length > 0, "Random words missing");
+
+        PendingDonation memory pending = pendingDonations[requestId];
+        require(pending.exists, "Unknown request");
+
+        delete pendingDonations[requestId];
+        pendingDonationCount -= 1;
+
+        uint256 refundBps = randomWords[0] % (MAX_REFUND_BPS + 1);
+        uint256 refundAmount = (pending.grossAmount * refundBps) / BPS_DENOMINATOR;
+        uint256 netAmount = pending.grossAmount - refundAmount;
+
+        if (donatedAmountByUser[pending.donor] == 0 && netAmount > 0) {
+            donatedUsers.push(pending.donor);
+        }
+        donatedAmountByUser[pending.donor] += netAmount;
+
+        if (refundAmount > 0) {
+            (bool refundOk, ) = payable(pending.donor).call{value: refundAmount}("");
+            require(refundOk, "Refund failed");
+        }
+
+        emit DonationProcessed(
+            pending.donor,
+            requestId,
+            pending.grossAmount,
+            refundAmount,
+            netAmount,
+            refundBps
+        );
+    }
+
     function findAll() external view returns (User[] memory) {
         User[] memory users = new User[](donatedUsers.length);
         for (uint256 i = 0; i < donatedUsers.length; i++) {
@@ -50,24 +154,16 @@ contract FindMe {
         return users;
     }
 
-    // 提现函数：仅 owner 可调用
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         require(msg.sender == owner, "Only the owner can withdraw");
+        require(pendingDonationCount == 0, "Pending VRF donations exist");
 
-        // 提现前把记录清空，保持状态一致
         for (uint256 i = 0; i < donatedUsers.length; i++) {
             donatedAmountByUser[donatedUsers[i]] = 0;
         }
         delete donatedUsers;
 
-        // 把合约内全部余额转给 owner
         (bool success, ) = owner.call{value: address(this).balance}("");
         require(success, "Withdrawal failed");
     }
-}
-
-// 前端使用的数据结构
-struct User {
-    address userAddress;
-    uint256 amount;
 }

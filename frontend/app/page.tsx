@@ -1,20 +1,21 @@
+"use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserProvider, Contract, formatEther, parseEther } from "ethers";
-import type { DonationUser } from "./types";
+import type { DonationUser } from "@/types";
 
 type Config = {
   contractAddress: string;
   abi: unknown[];
 };
 
-// 默认配置（当 config.js 还没生成时使用）
 const defaultConfig: Config = {
   contractAddress: "",
   abi: [],
 };
 
-// 从 window.APP_CONFIG 读取“合约地址 + ABI”
 const getConfig = (): Config => {
+  if (typeof window === "undefined") return defaultConfig;
   const cfg = window.APP_CONFIG;
   if (!cfg) return defaultConfig;
   return {
@@ -23,16 +24,13 @@ const getConfig = (): Config => {
   };
 };
 
-// 地址缩写：0x1234...abcd
 const shortAddress = (address: string): string => {
   if (!address || address.length < 10) return address;
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-export function App() {
+export default function Home() {
   const config = useMemo(getConfig, []);
-
-  // ---------- React 状态 ----------
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
   const [account, setAccount] = useState("");
@@ -44,15 +42,13 @@ export function App() {
     type: "",
   });
 
-  const hasMetaMask = Boolean(window.ethereum);
+  const hasMetaMask = typeof window !== "undefined" && Boolean(window.ethereum);
   const contractReady = Boolean(config.contractAddress && config.abi.length > 0);
 
   const setStatusMessage = (message: string, type: "" | "ok" | "err" = "") => {
     setStatus({ message, type });
   };
 
-  // 确保 provider 存在。
-  // provider = 读链上数据 + 发起钱包连接请求的入口
   const ensureProvider = useCallback((): BrowserProvider | null => {
     if (!window.ethereum) {
       setStatusMessage("未检测到 MetaMask，请先安装 MetaMask。", "err");
@@ -68,7 +64,6 @@ export function App() {
     return provider;
   }, [provider]);
 
-  // 读取“只读”链上数据：合约余额 + 捐款列表
   const loadReadonlyData = useCallback(async () => {
     if (!contractReady) {
       setStatusMessage("合约未配置。请先运行部署脚本生成 frontend/public/config.js", "err");
@@ -79,7 +74,6 @@ export function App() {
     if (!p) return;
 
     try {
-      // 注意：只读操作使用 provider，不需要 signer
       const readonlyContract = new Contract(config.contractAddress, config.abi, p);
       const [balanceWei, users] = (await Promise.all([
         p.getBalance(config.contractAddress),
@@ -94,7 +88,6 @@ export function App() {
     }
   }, [config.abi, config.contractAddress, contractReady, ensureProvider]);
 
-  // 连接 MetaMask：拿到 signer，才能发交易（fund/withdraw）
   const connectWallet = useCallback(async () => {
     if (!contractReady) {
       setStatusMessage("合约未配置。请先运行 npm run deploy:local", "err");
@@ -105,18 +98,14 @@ export function App() {
     if (!p) return;
 
     try {
-      // 弹出 MetaMask 授权窗口
       await p.send("eth_requestAccounts", []);
       const signer = await p.getSigner();
       const address = await signer.getAddress();
-
-      // 写操作使用 signer 版本的合约实例
       const c = new Contract(config.contractAddress, config.abi, signer);
 
       setAccount(address);
       setContract(c);
       setStatusMessage("钱包连接成功", "ok");
-
       await loadReadonlyData();
     } catch (error) {
       const message = error instanceof Error ? error.message : "未知错误";
@@ -124,7 +113,6 @@ export function App() {
     }
   }, [config.abi, config.contractAddress, contractReady, ensureProvider, loadReadonlyData]);
 
-  // 发起捐款交易
   const donate = useCallback(async () => {
     if (!contract) {
       setStatusMessage("请先连接 MetaMask", "err");
@@ -139,8 +127,6 @@ export function App() {
 
     try {
       setStatusMessage("捐款交易发送中...");
-
-      // parseEther: 把 "0.1" 转成 wei(BigInt)
       const tx = await contract.fund({ value: parseEther(amount) });
       await tx.wait();
 
@@ -152,7 +138,6 @@ export function App() {
     }
   }, [contract, donationInput, loadReadonlyData]);
 
-  // 发起提现交易（只有 owner 成功）
   const withdraw = useCallback(async () => {
     if (!contract) {
       setStatusMessage("请先连接 MetaMask", "err");
@@ -172,12 +157,10 @@ export function App() {
     }
   }, [contract, loadReadonlyData]);
 
-  // 页面加载时先拉一次链上数据
   useEffect(() => {
     void loadReadonlyData();
   }, [loadReadonlyData]);
 
-  // 切账号/切网络后，直接刷新页面，避免旧状态残留
   useEffect(() => {
     if (!window.ethereum?.on) return;
 
@@ -197,7 +180,7 @@ export function App() {
     <div className="container">
       <div className="card">
         <h1>FindMe 捐款</h1>
-        <p>React + TypeScript + MetaMask</p>
+        <p>Next.js + TypeScript + MetaMask</p>
         <p>
           合约地址: <code>{config.contractAddress || "未配置"}</code>
         </p>

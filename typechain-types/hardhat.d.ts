@@ -17,23 +17,311 @@ declare module "hardhat/types/runtime" {
       name: "FindMe",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.FindMe__factory>;
+    getContractFactory(
+      name: "IVRFCoordinatorLike",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVRFCoordinatorLike__factory>;
+    getContractFactory(
+      name: "RevertLab",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.RevertLab__factory>;
+    getContractFactory(
+      name: "EventReplayLab",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.EventReplayLab__factory>;
+    getContractFactory(
+      name: "AccessControlLab",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.AccessControlLab__factory>;
+    getContractFactory(
+      name: "IVaultLike",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVaultLike__factory>;
+    getContractFactory(
+      name: "ReentrancyAttacker",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ReentrancyAttacker__factory>;
+    getContractFactory(
+      name: "SafeVault",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SafeVault__factory>;
+    getContractFactory(
+      name: "VulnerableVault",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.VulnerableVault__factory>;
+    getContractFactory(
+      name: "CounterV1",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CounterV1__factory>;
+    getContractFactory(
+      name: "CounterV2",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.CounterV2__factory>;
+    getContractFactory(
+      name: "SimpleUpgradeableProxy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SimpleUpgradeableProxy__factory>;
+    getContractFactory(
+      name: "EIP712Verifier",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.EIP712Verifier__factory>;
+    getContractFactory(
+      name: "PermitToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.PermitToken__factory>;
+    getContractFactory(
+      name: "IndexerSource",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IndexerSource__factory>;
+    getContractFactory(
+      name: "IVRFConsumerLike",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IVRFConsumerLike__factory>;
+    getContractFactory(
+      name: "MockVRFCoordinator",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockVRFCoordinator__factory>;
 
     getContractAt(
       name: "FindMe",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.FindMe>;
+    getContractAt(
+      name: "IVRFCoordinatorLike",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVRFCoordinatorLike>;
+    getContractAt(
+      name: "RevertLab",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.RevertLab>;
+    getContractAt(
+      name: "EventReplayLab",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.EventReplayLab>;
+    getContractAt(
+      name: "AccessControlLab",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.AccessControlLab>;
+    getContractAt(
+      name: "IVaultLike",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVaultLike>;
+    getContractAt(
+      name: "ReentrancyAttacker",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ReentrancyAttacker>;
+    getContractAt(
+      name: "SafeVault",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SafeVault>;
+    getContractAt(
+      name: "VulnerableVault",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.VulnerableVault>;
+    getContractAt(
+      name: "CounterV1",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CounterV1>;
+    getContractAt(
+      name: "CounterV2",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.CounterV2>;
+    getContractAt(
+      name: "SimpleUpgradeableProxy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SimpleUpgradeableProxy>;
+    getContractAt(
+      name: "EIP712Verifier",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.EIP712Verifier>;
+    getContractAt(
+      name: "PermitToken",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.PermitToken>;
+    getContractAt(
+      name: "IndexerSource",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IndexerSource>;
+    getContractAt(
+      name: "IVRFConsumerLike",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IVRFConsumerLike>;
+    getContractAt(
+      name: "MockVRFCoordinator",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockVRFCoordinator>;
 
     deployContract(
       name: "FindMe",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FindMe>;
+    deployContract(
+      name: "IVRFCoordinatorLike",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVRFCoordinatorLike>;
+    deployContract(
+      name: "RevertLab",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.RevertLab>;
+    deployContract(
+      name: "EventReplayLab",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EventReplayLab>;
+    deployContract(
+      name: "AccessControlLab",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AccessControlLab>;
+    deployContract(
+      name: "IVaultLike",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVaultLike>;
+    deployContract(
+      name: "ReentrancyAttacker",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyAttacker>;
+    deployContract(
+      name: "SafeVault",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SafeVault>;
+    deployContract(
+      name: "VulnerableVault",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VulnerableVault>;
+    deployContract(
+      name: "CounterV1",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CounterV1>;
+    deployContract(
+      name: "CounterV2",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CounterV2>;
+    deployContract(
+      name: "SimpleUpgradeableProxy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SimpleUpgradeableProxy>;
+    deployContract(
+      name: "EIP712Verifier",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EIP712Verifier>;
+    deployContract(
+      name: "PermitToken",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PermitToken>;
+    deployContract(
+      name: "IndexerSource",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IndexerSource>;
+    deployContract(
+      name: "IVRFConsumerLike",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVRFConsumerLike>;
+    deployContract(
+      name: "MockVRFCoordinator",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MockVRFCoordinator>;
 
     deployContract(
       name: "FindMe",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.FindMe>;
+    deployContract(
+      name: "IVRFCoordinatorLike",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVRFCoordinatorLike>;
+    deployContract(
+      name: "RevertLab",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.RevertLab>;
+    deployContract(
+      name: "EventReplayLab",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EventReplayLab>;
+    deployContract(
+      name: "AccessControlLab",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.AccessControlLab>;
+    deployContract(
+      name: "IVaultLike",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVaultLike>;
+    deployContract(
+      name: "ReentrancyAttacker",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyAttacker>;
+    deployContract(
+      name: "SafeVault",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SafeVault>;
+    deployContract(
+      name: "VulnerableVault",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.VulnerableVault>;
+    deployContract(
+      name: "CounterV1",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CounterV1>;
+    deployContract(
+      name: "CounterV2",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.CounterV2>;
+    deployContract(
+      name: "SimpleUpgradeableProxy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SimpleUpgradeableProxy>;
+    deployContract(
+      name: "EIP712Verifier",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.EIP712Verifier>;
+    deployContract(
+      name: "PermitToken",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.PermitToken>;
+    deployContract(
+      name: "IndexerSource",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IndexerSource>;
+    deployContract(
+      name: "IVRFConsumerLike",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IVRFConsumerLike>;
+    deployContract(
+      name: "MockVRFCoordinator",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MockVRFCoordinator>;
 
     // default types
     getContractFactory(
