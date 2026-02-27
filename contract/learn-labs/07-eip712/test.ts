@@ -2,21 +2,67 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 async function verifyEip712WithWrongChainIdFails() {
-  // YOU IMPLEMENT HERE (about 45 lines)
-  // Goal:
-  // - deploy EIP712Verifier(name="MailLab", version="1")
-  // - prepare Mail struct {from,to,amount,nonce}
-  // - sign typed data with correct chainId and verifyAndConsume -> success
-  // - sign same message with wrong chainId and call verifyAndConsume -> must fail
-  //
-  // Hints:
-  // - domain fields: name, version, chainId, verifyingContract
-  // - types: Mail(from,address,to,address,amount,uint256,nonce,uint256)
-  // - signer.signTypedData(domain, types, value)
-  // - second call should revert with InvalidSigner
-  //
-  // Return true only if first succeeds and second fails.
-  throw new Error("TODO: implement EIP-712 sign/verify with chainId mismatch check");
+  const appName = "MailLab";
+  const appVersion = "1";
+
+  const [user, recipient] = await ethers.getSigners();
+
+  const eip712VerifierFactory = await ethers.getContractFactory("EIP712Verifier");
+  const verifier = await eip712VerifierFactory.deploy(appName, appVersion);
+
+  const chainId = (await ethers.provider.getNetwork()).chainId;
+
+  const correctDomain = {
+    name: appName,
+    version: appVersion,
+    chainId,
+    verifyingContract: await verifier.getAddress(),
+  };
+
+  const types = {
+    Mail: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "nonce", type: "uint256" },
+    ],
+  };
+
+  const message = {
+    from: await user.getAddress(),
+    to: await recipient.getAddress(),
+    amount: 100n,
+    nonce: 0n,
+  };
+
+  const correctSignature = await user.signTypedData(correctDomain, types, message);
+  const tx = await verifier.verifyAndConsume(message, correctSignature);
+  await tx.wait();
+
+  const wrongDomain = {
+    ...correctDomain,
+    chainId: chainId + 1n,
+  };
+
+  const wrongSignature = await user.signTypedData(wrongDomain, types, {
+    ...message,
+    nonce: 1n,
+  });
+
+try {
+  const tx = await verifier.verifyAndConsume(
+    { ...message, nonce: 1n },
+    wrongSignature
+  );
+  await tx.wait();
+  return false;
+} catch (error: any) {
+  if(error.revert?.name== "InvalidSigner"){
+    return true;
+  }
+}
+
+  return true;
 }
 
 describe("07 EIP-712", function () {
