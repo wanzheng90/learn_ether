@@ -17,7 +17,18 @@ async function runAttackComparison() {
   // - safe vault may revert with "reentrant" or keep balance unchanged
   //
   // Return object: { vulnerableDrained: boolean, safeProtected: boolean }
-  throw new Error("TODO: implement reentrancy attack A/B comparison");
+  
+  // 发布合约
+  const vulnerableVaultFactory = await ethers.getContractFactory("VulnerableVault");
+  const safeVaultFactory = await ethers.getContractFactory("SafeVault");
+  const reentrancyAttackerFactory = await ethers.getContractFactory("ReentrancyAttacker");
+
+  // 调用不安全钱包
+
+
+  // 调用安全钱包
+
+
 }
 
 describe("05 Reentrancy vs CEI", function () {

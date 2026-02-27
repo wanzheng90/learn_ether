@@ -5,10 +5,17 @@ contract SimpleUpgradeableProxy {
     bytes32 private constant IMPLEMENTATION_SLOT =
         bytes32(uint256(keccak256("learn.lab.proxy.implementation")) - 1);
 
-    address public admin;
+    bytes32 private constant ADMIN_SLOT =
+        bytes32(uint256(keccak256("learn.lab.proxy.admin")) - 1);
+
+    
 
     constructor(address implementation_, bytes memory initData) {
-        admin = msg.sender;
+        address admin = msg.sender;
+        bytes32 slot = ADMIN_SLOT;
+        assembly {
+            sstore(slot, admin)
+        }
         _setImplementation(implementation_);
         if (initData.length > 0) {
             (bool ok, ) = implementation_.delegatecall(initData);
@@ -17,6 +24,11 @@ contract SimpleUpgradeableProxy {
     }
 
     function upgradeTo(address newImplementation) external {
+        bytes32 slot = ADMIN_SLOT;
+        address admin;
+        assembly {
+            admin := sload(slot)
+        }
         require(msg.sender == admin, "not admin");
         _setImplementation(newImplementation);
     }

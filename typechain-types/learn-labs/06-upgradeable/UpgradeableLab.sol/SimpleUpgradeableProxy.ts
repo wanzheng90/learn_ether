@@ -22,10 +22,9 @@ import type {
 
 export interface SimpleUpgradeableProxyInterface extends Interface {
   getFunction(
-    nameOrSignature: "admin" | "implementation" | "upgradeTo"
+    nameOrSignature: "implementation" | "upgradeTo"
   ): FunctionFragment;
 
-  encodeFunctionData(functionFragment: "admin", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "implementation",
     values?: undefined
@@ -35,7 +34,6 @@ export interface SimpleUpgradeableProxyInterface extends Interface {
     values: [AddressLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "admin", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "implementation",
     data: BytesLike
@@ -86,8 +84,6 @@ export interface SimpleUpgradeableProxy extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  admin: TypedContractMethod<[], [string], "view">;
-
   implementation: TypedContractMethod<[], [string], "view">;
 
   upgradeTo: TypedContractMethod<
@@ -100,9 +96,6 @@ export interface SimpleUpgradeableProxy extends BaseContract {
     key: string | FunctionFragment
   ): T;
 
-  getFunction(
-    nameOrSignature: "admin"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "implementation"
   ): TypedContractMethod<[], [string], "view">;

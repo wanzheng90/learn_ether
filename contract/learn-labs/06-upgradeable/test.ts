@@ -18,7 +18,31 @@ async function verifyUpgradeStatePersistence() {
   // - use ethers.getContractAt("CounterV2", proxyAddress) after upgrade
   //
   // Return final value
-  throw new Error("TODO: implement proxy upgrade and state check");
+  // throw new Error("TODO: implement proxy upgrade and state check");
+  
+  // 发布CounterV1、CounterV2
+  const [admin, receiver] = await ethers.getSigners();
+  const proxyFactory = await ethers.getContractFactory("SimpleUpgradeableProxy");
+
+  const counterV1Factory = await ethers.getContractFactory("CounterV1");
+  const counterV1 = await counterV1Factory.deploy();
+  
+  const counterV2Factory = await ethers.getContractFactory("CounterV2");
+  const counterV2 = await counterV2Factory.deploy();
+
+  const proxy = await proxyFactory.connect(admin).deploy(counterV1, "0x");
+  const counterV1Proxy = await ethers.getContractAt("CounterV1", proxy) 
+  const counterV2Proxy = await ethers.getContractAt("CounterV2", proxy) 
+
+  // 发布 SimpleUpgradeableProxy 默认实现为CounterV1 地址，设置7
+  await counterV1Proxy.setValue(7n);
+  console.log(`counterV1Contract value ${await counterV1Proxy.value()}`)
+
+  // 切换为CounterV2 调用increment
+  await proxy.connect(admin).upgradeTo(await counterV2.getAddress());
+  await counterV2Proxy.increment();
+  console.log(`counterV2Contract value ${await counterV2Proxy.value()}`);
+  return await counterV1Proxy.value();
 }
 
 describe("06 Upgradeable proxy", function () {
